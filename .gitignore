@@ -2,7 +2,7 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs/MCDA_Assignments
-/CSVCrawlerProject/bin/Debug/net7.0
-/CSVCrawlerProject/CustomLog
-/CSVCrawlerProject/obj
+/.vs*
+/CSVCrawlerProject/bin/*
+/CSVCrawlerProject/CustomLog/*
+/CSVCrawlerProject/obj/*
