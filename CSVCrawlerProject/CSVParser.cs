@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Microsoft.Extensions.Primitives;
+using System.Text;
 
 namespace ProgAssign1
 {
@@ -23,7 +24,18 @@ namespace ProgAssign1
 
         public void run()
         {
+
             localStartTime = DateTime.Now;
+
+            Console.WriteLine("Starting processing at "+localStartTime.ToString());
+            sbLog.Append("Starting processing at " + localStartTime.ToString() + "...." + Environment.NewLine);
+
+            foreach (string singleFile in  listOfFiles)
+            {
+                List<dynamic> t = fo.readCSVFile(singleFile);
+
+                Console.WriteLine(t.ToString());
+            }
 
         }
     }

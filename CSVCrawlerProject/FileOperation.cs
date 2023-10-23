@@ -1,4 +1,7 @@
-﻿using System.Reflection.Metadata.Ecma335;
+﻿using CsvHelper;
+using System.Dynamic;
+using System.Globalization;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 
 namespace ProgAssign1
@@ -56,6 +59,27 @@ namespace ProgAssign1
             sw.Write(sb.ToString());
             sw.Close();
             fs.Close();
+        }
+
+        public List<dynamic> readCSVFile(string path)
+        {
+            if (path is null || path.Trim().Length < 1)
+                throw new Exception("CSV Path is null .....");
+            else if (!File.Exists(path))
+                throw new Exception("File doesn't exist..." + path);
+
+            StreamReader reader = new StreamReader(path);
+            CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+
+            List< dynamic> res = csv.GetRecords<dynamic>().ToList();
+
+            /*foreach (KeyValuePair<string, object> kvp in res[0]) // enumerating over it exposes the Properties and Values as a KeyValuePair
+                Console.WriteLine("{0} = {1}", kvp.Key, kvp.Value);*/
+
+            csv.Dispose();
+            reader.Close();
+
+            return res;
         }
 
     }

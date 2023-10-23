@@ -49,7 +49,7 @@ namespace ProgAssign1
                 phase = "Processing";
                 sbLog.Append("Starting data processing phase" + Environment.NewLine);
                 Console.WriteLine("Starting data processing phase" + Environment.NewLine);
-                processData("CUSTOMER_DATA");
+                processData();
             }
             catch (Exception ex)
             {
@@ -70,15 +70,23 @@ namespace ProgAssign1
             }
         }
 
-        private void processData(string configKey)
+        private void processData()
         {
-            if (configKey is null || configKey.Trim().Length < 1 || fileLst is null || fileLst.Count < 1)
+            if (fileLst is null || fileLst.Count < 1)
             {
                 Console.WriteLine("configKey or List of files are NULL");
+
                 sbLog.Append("configKey or List of files are NULL" + Environment.NewLine);
                 throw new Exception();
             }
-            return;
+
+            String outputFlNm = Path.Join(outputPath, "Final_Output.csv");
+            String fullLogFile = Path.Join(logPath, logFileName);
+
+            CSVParser ps = new CSVParser(outputFlNm, fullLogFile, sbLog, fileLst, fo);
+
+            ps.run();
+
         }
 
         private void decideFiles()
