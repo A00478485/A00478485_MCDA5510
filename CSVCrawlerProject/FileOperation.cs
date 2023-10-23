@@ -59,6 +59,7 @@ namespace ProgAssign1
             sw.Write(sb.ToString());
             sw.Close();
             fs.Close();
+            sb.Clear();
         }
 
         public List<dynamic> readCSVFile(string path)

@@ -3,7 +3,7 @@ using System.Text;
 
 namespace ProgAssign1
 {
-    
+
     internal class CSVParser
     {
         private readonly String logFile;
@@ -12,6 +12,10 @@ namespace ProgAssign1
         private FileOperation fo;
         private List<string> listOfFiles;
         private string outputFileNm;
+        private StringBuilder outputContent;
+        Dictionary<int, Dictionary<string, int>> fileInfo;
+        Dictionary<string, int> globalInfo;
+        private int sbCapacity ;
         public CSVParser(string outputFileNm, string logFile, StringBuilder sb, List<string> Lst, FileOperation fo)
         {
             this.logFile = logFile;
@@ -19,7 +23,15 @@ namespace ProgAssign1
             this.sbLog = sb;
             this.listOfFiles = Lst;
             this.outputFileNm = outputFileNm;
-            localStartTime = DateTime.Now;
+            this.localStartTime = DateTime.Now;
+            this.outputContent = new StringBuilder();
+            this.fileInfo = new Dictionary<int, Dictionary<string, int>>();
+            this.globalInfo = new Dictionary<string, int>();
+            sbCapacity = Math.Min(sbLog.MaxCapacity, 100000);
+
+            this.globalInfo.Add("NUMBER_OF_FILE", this.listOfFiles.Count);
+            this.globalInfo.Add("GLOBAL_PROCESSED_ROW", 0);
+            this.globalInfo.Add("GLOBAL_SKIPPED_ROW", 0);
         }
 
         public void run()
@@ -27,16 +39,49 @@ namespace ProgAssign1
 
             localStartTime = DateTime.Now;
 
-            Console.WriteLine("Starting processing at "+localStartTime.ToString());
-            sbLog.Append("Starting processing at " + localStartTime.ToString() + "...." + Environment.NewLine);
+            Dictionary<string, int> filelevelDetails;
+            DateTime start;
+            DateTime end;
 
-            foreach (string singleFile in  listOfFiles)
+            int ind = -1;
+
+            foreach (string singleFile in listOfFiles)
             {
+                ind++;
+                start = DateTime.Now;
+
                 List<dynamic> t = fo.readCSVFile(singleFile);
+                sbLog.Append("STARTED processing of FILE NO - " + ind + Environment.NewLine);
 
-                Console.WriteLine(t.ToString());
+                filelevelDetails = processFile(t);
+
+                end = DateTime.Now;
+
+                globalInfo["GLOBAL_PROCESSED_ROW"] = globalInfo["GLOBAL_PROCESSED_ROW"] + filelevelDetails["PROCESSED_ROW"];
+                globalInfo["GLOBAL_SKIPPED_ROW"] = globalInfo["GLOBAL_SKIPPED_ROW"] + filelevelDetails["SKIPPED_ROW"];
+
+                sbLog.Append("FINISHED processing of FILE NO - " + ind + " in " + (end - start) + Environment.NewLine);
+                sbLog.Append("PROCESSED ROWS - " + filelevelDetails["PROCESSED_ROW"] + Environment.NewLine);
+                sbLog.Append("SKIPPED ROWS - " + filelevelDetails["SKIPPED_ROW"] + Environment.NewLine);
+                sbLog.Append("WRITTEN ROWS - " + (filelevelDetails["PROCESSED_ROW"] - filelevelDetails["SKIPPED_ROW"]) + Environment.NewLine);
+                sbLog.Append(Environment.NewLine);
+
+                if(sbCapacity < sbLog.Length)
+                {
+                    fo.WriteLogFile(logFile, sbLog);
+                }
+
             }
+            fo.WriteLogFile(logFile, sbLog);
 
+        }
+
+        private Dictionary<string, int> processFile(List<dynamic> t)
+        {
+            Dictionary<string, int> result = new Dictionary<string, int>();
+            result.Add("PROCESSED_ROW", 0);
+            result.Add("SKIPPED_ROW", 0);
+            return result;
         }
     }
 

@@ -47,9 +47,10 @@ namespace ProgAssign1
                 sbLog.Append("Time took from begining to decising CSV scope = " + (dtCurr.Subtract(startTime)) + Environment.NewLine);
 
                 phase = "Processing";
-                sbLog.Append("Starting data processing phase" + Environment.NewLine);
-                Console.WriteLine("Starting data processing phase" + Environment.NewLine);
+                sbLog.Append("Starting data processing phase at " + DateTime.Now.ToString() + Environment.NewLine + Environment.NewLine);
+                Console.WriteLine("Starting data processing phase at " + DateTime.Now.ToString() + Environment.NewLine );
                 processData();
+                
             }
             catch (Exception ex)
             {
@@ -83,9 +84,14 @@ namespace ProgAssign1
             String outputFlNm = Path.Join(outputPath, "Final_Output.csv");
             String fullLogFile = Path.Join(logPath, logFileName);
 
+            fo.WriteLogFile(fullLogFile, sbLog);
+
             CSVParser ps = new CSVParser(outputFlNm, fullLogFile, sbLog, fileLst, fo);
 
             ps.run();
+
+            Console.WriteLine(Environment.NewLine + "Finished data processing phase at " + DateTime.Now.ToString());
+            sbLog.Append(Environment.NewLine + "Finished data processing phase at " + DateTime.Now.ToString());
 
         }
 
@@ -157,8 +163,6 @@ namespace ProgAssign1
 
             decideDepth();
 
-
-
             Console.Clear();
             sbLog.Append("Starting execution at " + startTime.ToString() + Environment.NewLine);
             sbLog.Append("Root Path = " + rootPath + Environment.NewLine);
@@ -168,11 +172,10 @@ namespace ProgAssign1
             sbLog.Append("Log File = " + logFileName + Environment.NewLine);
             sbLog.Append("Max Depth = " + maxDepth + Environment.NewLine);
 
-            fo.WriteLogFile(Path.Join(logPath, logFileName), sbLog);
-
             Console.WriteLine(sbLog.ToString());
 
-            sbLog.Clear();
+            fo.WriteLogFile(Path.Join(logPath, logFileName), sbLog);
+
         }
 
         private string choosePath(string shortMsg, string pathLocal, Boolean force)
