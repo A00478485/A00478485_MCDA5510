@@ -1,13 +1,16 @@
 ﻿using CsvHelper;
-using System.Dynamic;
+using CsvHelper.Configuration;
+using Microsoft.Extensions.Configuration;
+using System.Formats.Asn1;
 using System.Globalization;
-using System.Reflection.Metadata.Ecma335;
 using System.Text;
 
 namespace ProgAssign1
 {
     internal class FileOperation
     {
+
+        Boolean flg = true;
         public Boolean checkFolder(string path)
         {
 
@@ -81,6 +84,56 @@ namespace ProgAssign1
             reader.Close();
 
             return res;
+        }
+
+        public void writeCustomerToFile(String path, List<Customer> lst)
+        {
+            FileInfo fi = new FileInfo(path);
+            Boolean headerFlg = false;
+
+            if (!Directory.Exists(fi.DirectoryName))
+                Directory.CreateDirectory(fi.DirectoryName);
+
+            FileStream fs;
+            if (flg)
+            {
+                flg = false;
+                fs = new FileStream(path, FileMode.Create, FileAccess.Write);
+                headerFlg = true;
+            }
+            else if (File.Exists(path))
+            {
+                fs = new FileStream(path, FileMode.Append, FileAccess.Write);
+                headerFlg = false;
+            }
+            else
+            {
+                fs = new FileStream(path, FileMode.Create, FileAccess.Write);
+                headerFlg = true;
+            }
+
+            StreamWriter writer = new StreamWriter(fs);
+            CsvWriter csvWriter;
+
+            if (!headerFlg)
+            {
+                headerFlg = false;
+                csvWriter = new CsvWriter(writer,new CsvConfiguration(CultureInfo.InvariantCulture) { HasHeaderRecord = false });
+            }
+            else
+            {
+                csvWriter = new CsvWriter(writer, CultureInfo.InvariantCulture);
+            }
+            new CsvWriter(writer, CultureInfo.InvariantCulture);
+
+            csvWriter.Context.RegisterClassMap<CustomerMap>();
+
+            
+
+            csvWriter.WriteRecords(lst);
+            csvWriter.Flush();
+            writer.Close();
+            lst.Clear();
         }
 
     }

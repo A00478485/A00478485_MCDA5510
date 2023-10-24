@@ -1,4 +1,5 @@
 ﻿using CsvHelper;
+using CsvHelper.Configuration;
 using Microsoft.Extensions.Primitives;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -19,7 +20,7 @@ namespace ProgAssign1
         private StringBuilder outputContent;
         Dictionary<int, Dictionary<string, int>> fileInfo;
         Dictionary<string, int> globalInfo;
-        private int sbCapacity ;
+        private int sbCapacity;
         List<Customer> outputFile = new List<Customer>();
         Dictionary<string, List<string>> possibleColName = new Dictionary<string, List<string>>();
         string emailRegEx = @"\A(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\Z";
@@ -83,7 +84,7 @@ namespace ProgAssign1
             possibleColName["ZIP_CODE"].Add("POSTALCODE");
 
             possibleColName["CITY"].Add("CITY");
-            
+
             possibleColName["PROVINCE"].Add("PROVINCE");
             possibleColName["PROVINCE"].Add("PRNVC");
 
@@ -132,6 +133,12 @@ namespace ProgAssign1
 
                 filelevelDetails = processFile(t, singleFile);
 
+                if (outputFile.Count > 1000)
+                {
+                    sbLog.Append("Flushing the CUSTOMER DATA ARRAY to File" + Environment.NewLine);
+                    fo.writeCustomerToFile(outputFileNm, outputFile);
+                }
+
                 end = DateTime.Now;
 
                 globalInfo["GLOBAL_PROCESSED_ROW"] = globalInfo["GLOBAL_PROCESSED_ROW"] + filelevelDetails["PROCESSED_ROW"];
@@ -143,7 +150,7 @@ namespace ProgAssign1
                 sbLog.Append("WRITTEN ROWS - " + (filelevelDetails["PROCESSED_ROW"] - filelevelDetails["SKIPPED_ROW"]) + Environment.NewLine);
                 sbLog.Append(Environment.NewLine);
 
-                if(sbCapacity < sbLog.Length)
+                if (sbCapacity < sbLog.Length)
                 {
                     fo.WriteLogFile(logFile, sbLog);
                 }
@@ -160,12 +167,12 @@ namespace ProgAssign1
             result.Add("SKIPPED_ROW", 0);
             Customer cust;
 
-            foreach(ExpandoObject row in file)
+            foreach (ExpandoObject row in file)
             {
                 cust = null;
                 result["PROCESSED_ROW"] = result["PROCESSED_ROW"] + 1;
                 cust = validateAndCreateCustomer(row);
-                if(cust == null)
+                if (cust == null)
                 {
                     result["SKIPPED_ROW"] = result["SKIPPED_ROW"] + 1;
                 }
@@ -174,8 +181,16 @@ namespace ProgAssign1
                     outputFile.Add(cust);
                 }
 
-                
+                if (outputFile.Count > 1000)
+                {
+                    sbLog.Append("Flushing the CUSTOMER DATA ARRAY to File");
+                    fo.writeCustomerToFile(outputFileNm, outputFile);
+                }
+
             }
+
+            
+
             fo.WriteLogFile(logFile, sbLog);
             Console.WriteLine("Output Objects = " + outputFile.Count);
 
@@ -190,7 +205,7 @@ namespace ProgAssign1
             String newKey;
 
             /*Dictionary<string, List<string>> possibleColName = new Dictionary<string, List<string>>();*/
-            
+
             foreach (KeyValuePair<string, object> kvp in row)
             {
                 newKey = kvp.Key.ToUpper().Trim().Replace(" ", "_");
@@ -199,7 +214,7 @@ namespace ProgAssign1
 
                 if (possibleColName["FIRST_NAME"].Contains(newKey))
                 {
-                    if(validation.ContainsKey("FIRST_NAME"))
+                    if (validation.ContainsKey("FIRST_NAME"))
                     {
                         sbLog.Append("Seeing duplicated column and hence skipping the row ...." + Environment.NewLine);
                         return null;
@@ -234,7 +249,7 @@ namespace ProgAssign1
                     {
                         street_number = Convert.ToInt16((string)kvp.Value);
                     }
-                    catch(Exception)
+                    catch (Exception)
                     {
                         street_number = -2;
                     }
@@ -363,9 +378,9 @@ namespace ProgAssign1
 
             }
 
-/*            foreach (string key in validation.Keys)
-                Console.WriteLine(key);
-            Console.WriteLine("Validation count = " + validation.Count);*/
+            /*            foreach (string key in validation.Keys)
+                            Console.WriteLine(key);
+                        Console.WriteLine("Validation count = " + validation.Count);*/
 
             if (validation.Count != 10)
             {
@@ -374,23 +389,23 @@ namespace ProgAssign1
             }
             else
                 return cust;
-            
+
         }
     }
 
-    internal class Customer
+    public class Customer
     {
-        public string first_name;
-        public string last_name;
-        public int street_number = -1;
-        public string street_name;
-        public string city;
-        public string postol_code;
-        public string province;
-        public string country;
-        public int phone_number = -1;
-        public string email_address;
-        public DateOnly file_date;
+        public string first_name { get; set; }
+        public string last_name { get; set; }
+        public int street_number { get; set; }
+        public string street_name { get; set; }
+        public string city { get; set; }
+        public string postol_code { get; set; }
+        public string province { get; set; }
+        public string country { get; set; }
+        public int phone_number { get; set; }
+        public string email_address { get; set; }
+        public DateOnly file_date { get; set; }
 
         public Customer()
         {
@@ -464,5 +479,23 @@ namespace ProgAssign1
             return sb.ToString();
         }
 
+    }
+
+    public class CustomerMap : ClassMap<Customer>
+    {
+        public CustomerMap()
+        {
+            Map(m => m.first_name).Name("First Name").Index(0);
+            Map(m => m.last_name).Name("Last Name").Index(2);
+            Map(m => m.street_number).Name("Street Number").Index(4);
+            Map(m => m.street_name).Name("Street Name").Index(6);
+            Map(m => m.city).Name("City").Index(8);
+            Map(m => m.postol_code).Name("Postal Code").Index(10);
+            Map(m => m.province).Name("Province").Index(12);
+            Map(m => m.country).Name("Country").Index(14);
+            Map(m => m.phone_number).Name("Number").Index(16);
+            Map(m => m.email_address).Name("Email Address").Index(18);
+            Map(m => m.file_date).Name("File Date").Index(20);
+        }
     }
 }
