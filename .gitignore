@@ -6,3 +6,5 @@
 /CSVCrawlerProject/bin/*
 /CSVCrawlerProject/CustomLog/*
 /CSVCrawlerProject/obj/*
+/CSVCrawlerProject/SampleInput*
+CSVCrawlerProject/FinalOutput*

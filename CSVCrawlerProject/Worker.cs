@@ -50,7 +50,13 @@ namespace ProgAssign1
                 sbLog.Append("Starting data processing phase at " + DateTime.Now.ToString() + Environment.NewLine + Environment.NewLine);
                 Console.WriteLine("Starting data processing phase at " + DateTime.Now.ToString() + Environment.NewLine );
                 processData();
-                
+                DateTime endTime = DateTime.Now;
+
+                Console.WriteLine("Total time took = " + (endTime - dtCurr));
+                sbLog.Append("Total time took = " + (endTime - dtCurr) + Environment.NewLine);
+
+                fo.WriteLogFile(Path.Join(logPath, logFileName), sbLog);
+
             }
             catch (Exception ex)
             {
@@ -212,16 +218,15 @@ namespace ProgAssign1
         List<string> GetFilesAndFolders(string path, string pattern, int depth)
         {
             var list = new List<string>();
-            foreach (var directory in Directory.EnumerateDirectories(path, pattern))
+            foreach (String directory in Directory.EnumerateDirectories(path, "*", SearchOption.TopDirectoryOnly))
             {
-                list.Add(directory);
                 if (depth > 0)
                 {
                     list.AddRange(GetFilesAndFolders(directory, pattern, depth - 1));
                 }
             }
 
-            list.AddRange(Directory.EnumerateFiles(path, pattern));
+            list.AddRange(Directory.EnumerateFiles(path, pattern, SearchOption.TopDirectoryOnly).ToList<String>());
 
             return list;
         }

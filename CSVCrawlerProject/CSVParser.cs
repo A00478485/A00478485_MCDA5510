@@ -129,7 +129,7 @@ namespace ProgAssign1
                 start = DateTime.Now;
 
                 List<dynamic> t = fo.readCSVFile(singleFile);
-                sbLog.Append("STARTED processing of FILE NO - " + ind + Environment.NewLine);
+                sbLog.Append("STARTED processing of FILE NO - " + (ind + 1) + Environment.NewLine);
 
                 filelevelDetails = processFile(t, singleFile);
 
@@ -156,6 +156,22 @@ namespace ProgAssign1
                 }
 
             }
+
+            sbLog.Append("Flushing the CUSTOMER DATA ARRAY to File" + Environment.NewLine);
+            fo.writeCustomerToFile(outputFileNm, outputFile);
+
+            sbLog.Append(Environment.NewLine);
+            sbLog.Append("Total processed row = " + globalInfo["GLOBAL_PROCESSED_ROW"] + Environment.NewLine);
+            sbLog.Append("Total skipped row = " + globalInfo["GLOBAL_SKIPPED_ROW"] + Environment.NewLine);
+            sbLog.Append("Total written row = " + (globalInfo["GLOBAL_PROCESSED_ROW"] - globalInfo["GLOBAL_SKIPPED_ROW"]) + Environment.NewLine);
+            sbLog.Append(Environment.NewLine);
+
+
+            Console.WriteLine();
+            Console.WriteLine("Total processed row = " + globalInfo["GLOBAL_PROCESSED_ROW"]);
+            Console.WriteLine("Total skipped row = " + globalInfo["GLOBAL_SKIPPED_ROW"]);
+            Console.WriteLine("Total written row = " + (globalInfo["GLOBAL_PROCESSED_ROW"] - globalInfo["GLOBAL_SKIPPED_ROW"]));
+
             fo.WriteLogFile(logFile, sbLog);
 
         }
@@ -192,7 +208,7 @@ namespace ProgAssign1
             
 
             fo.WriteLogFile(logFile, sbLog);
-            Console.WriteLine("Output Objects = " + outputFile.Count);
+            //Console.WriteLine("Output Objects = " + outputFile.Count);
 
             return result;
         }
@@ -223,6 +239,8 @@ namespace ProgAssign1
                     {
                         validation.Add("FIRST_NAME", true);
                         cust.first_name = (string)kvp.Value;
+                        if (cust.first_name is null || cust.first_name.Trim().Length == 0)
+                            return null;
                     }
                 }
 
@@ -237,6 +255,8 @@ namespace ProgAssign1
                     {
                         validation.Add("LAST_NAME", true);
                         cust.last_name = (string)kvp.Value;
+                        if (cust.last_name is null || cust.last_name.Trim().Length == 0)
+                            return null;
                     }
                 }
 
@@ -277,6 +297,8 @@ namespace ProgAssign1
                     {
                         validation.Add("STREET_NAME", true);
                         cust.street_name = (string)kvp.Value;
+                        if (cust.street_name.Trim().Length == 0)
+                            return null;
                     }
                 }
 
@@ -291,6 +313,8 @@ namespace ProgAssign1
                     {
                         validation.Add("ZIP_CODE", true);
                         cust.postol_code = (string)kvp.Value;
+                        if (cust.postol_code.Trim().Length == 0)
+                            return null;
                     }
                 }
 
@@ -305,6 +329,8 @@ namespace ProgAssign1
                     {
                         validation.Add("CITY", true);
                         cust.city = (string)kvp.Value;
+                        if (cust.city.Trim().Length == 0)
+                            return null;
                     }
                 }
 
@@ -319,6 +345,8 @@ namespace ProgAssign1
                     {
                         validation.Add("PROVINCE", true);
                         cust.province = (string)kvp.Value;
+                        if (cust.province.Trim().Length == 0)
+                            return null;
                     }
                 }
 
@@ -333,6 +361,8 @@ namespace ProgAssign1
                     {
                         validation.Add("COUNTRY", true);
                         cust.country = (string)kvp.Value;
+                        if (cust.country.Trim().Length == 0)
+                            return null;
                     }
                 }
 
