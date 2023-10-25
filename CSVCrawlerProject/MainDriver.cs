@@ -12,7 +12,19 @@ namespace ProgAssign1
         {
             var host = CreateHostBuilder(args).Build();
             var worker = ActivatorUtilities.CreateInstance<Worker>(host.Services);
-            worker.run();
+            try
+            {
+                worker.run();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine("Something has failed and hence Exiting the Program");
+                Console.WriteLine("Printing the StackTrace for Informatuin");
+                Console.WriteLine(ex.GetBaseException());
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                Console.WriteLine(ex.Source);
+            }
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args)

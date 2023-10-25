@@ -3,6 +3,7 @@ using CsvHelper.Configuration;
 using Microsoft.Extensions.Primitives;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -112,6 +113,27 @@ namespace ProgAssign1
             possibleColName["EMAIL"].Add("MAIL");
         }
 
+        public DateOnly? getDateFromPath(string path)
+        {
+            DateOnly dt;
+            DateTime fl;
+
+            string loop_val;
+
+            try
+            {
+                DirectoryInfo fi = new DirectoryInfo(path);
+                loop_val = fi.Parent.Name.ToString()+"/"+ fi.Parent.Parent.Name.ToString() + "/"+ fi.Parent.Parent.Parent.Name.ToString();
+                //fl = DateTime.ParseExact(loop_val, "yyyy/MM/dd", CultureInfo.InvariantCulture);
+                dt = DateOnly.Parse(loop_val);
+                return dt;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         public void run()
         {
 
@@ -130,8 +152,19 @@ namespace ProgAssign1
 
                 List<dynamic> t = fo.readCSVFile(singleFile);
                 sbLog.Append("STARTED processing of FILE NO - " + (ind + 1) + Environment.NewLine);
+                sbLog.Append("File Location = " + singleFile + Environment.NewLine);
 
-                filelevelDetails = processFile(t, singleFile);
+                DateOnly? dt = getDateFromPath(singleFile);
+                if (dt is not null)
+                {
+                    sbLog.Append("File_Date = " + dt.ToString() + Environment.NewLine);
+                }
+                else
+                {
+                    sbLog.Append("File_Date = NULL" + Environment.NewLine);
+                }
+
+                filelevelDetails = processFile(t, dt);
 
                 if (outputFile.Count > 1000)
                 {
@@ -176,7 +209,7 @@ namespace ProgAssign1
 
         }
 
-        private Dictionary<string, int> processFile(List<dynamic> file, string pathOfFile)
+        private Dictionary<string, int> processFile(List<dynamic> file, DateOnly? dt)
         {
             Dictionary<string, int> result = new Dictionary<string, int>();
             result.Add("PROCESSED_ROW", 0);
@@ -191,21 +224,29 @@ namespace ProgAssign1
                 if (cust == null)
                 {
                     result["SKIPPED_ROW"] = result["SKIPPED_ROW"] + 1;
+                    sbLog.Append("Skipped row was " + result["PROCESSED_ROW"] + Environment.NewLine);
                 }
                 else
                 {
+
+                    if (dt is not null)
+                    {
+                        cust.file_date = dt;
+                    }
+
+
                     outputFile.Add(cust);
                 }
 
                 if (outputFile.Count > 1000)
                 {
-                    sbLog.Append("Flushing the CUSTOMER DATA ARRAY to File");
+                    sbLog.Append("Flushing the CUSTOMER DATA ARRAY to File" + Environment.NewLine);
                     fo.writeCustomerToFile(outputFileNm, outputFile);
                 }
 
             }
 
-            
+
 
             fo.WriteLogFile(logFile, sbLog);
             //Console.WriteLine("Output Objects = " + outputFile.Count);
@@ -240,7 +281,11 @@ namespace ProgAssign1
                         validation.Add("FIRST_NAME", true);
                         cust.first_name = (string)kvp.Value;
                         if (cust.first_name is null || cust.first_name.Trim().Length == 0)
+                        {
+                            sbLog.Append("Skipping the row due to NULL or 0 length data ..." + Environment.NewLine);
                             return null;
+                        }
+
                     }
                 }
 
@@ -256,7 +301,10 @@ namespace ProgAssign1
                         validation.Add("LAST_NAME", true);
                         cust.last_name = (string)kvp.Value;
                         if (cust.last_name is null || cust.last_name.Trim().Length == 0)
+                        {
+                            sbLog.Append("Skipping the row due to NULL or 0 length data ..." + Environment.NewLine);
                             return null;
+                        }
                     }
                 }
 
@@ -298,7 +346,10 @@ namespace ProgAssign1
                         validation.Add("STREET_NAME", true);
                         cust.street_name = (string)kvp.Value;
                         if (cust.street_name.Trim().Length == 0)
+                        {
+                            sbLog.Append("Skipping the row due to NULL or 0 length data ..." + Environment.NewLine);
                             return null;
+                        }
                     }
                 }
 
@@ -314,7 +365,10 @@ namespace ProgAssign1
                         validation.Add("ZIP_CODE", true);
                         cust.postol_code = (string)kvp.Value;
                         if (cust.postol_code.Trim().Length == 0)
+                        {
+                            sbLog.Append("Skipping the row due to NULL or 0 length data ..." + Environment.NewLine);
                             return null;
+                        }
                     }
                 }
 
@@ -330,7 +384,10 @@ namespace ProgAssign1
                         validation.Add("CITY", true);
                         cust.city = (string)kvp.Value;
                         if (cust.city.Trim().Length == 0)
+                        {
+                            sbLog.Append("Skipping the row due to NULL or 0 length data ..." + Environment.NewLine);
                             return null;
+                        }
                     }
                 }
 
@@ -346,7 +403,10 @@ namespace ProgAssign1
                         validation.Add("PROVINCE", true);
                         cust.province = (string)kvp.Value;
                         if (cust.province.Trim().Length == 0)
+                        {
+                            sbLog.Append("Skipping the row due to NULL or 0 length data ..." + Environment.NewLine);
                             return null;
+                        }
                     }
                 }
 
@@ -362,7 +422,10 @@ namespace ProgAssign1
                         validation.Add("COUNTRY", true);
                         cust.country = (string)kvp.Value;
                         if (cust.country.Trim().Length == 0)
+                        {
+                            sbLog.Append("Skipping the row due to NULL or 0 length data ..." + Environment.NewLine);
                             return null;
+                        }
                     }
                 }
 
@@ -373,7 +436,7 @@ namespace ProgAssign1
 
                     try
                     {
-                        street_number = Convert.ToInt32((string)kvp.Value);
+                        street_number = Convert.ToInt32(((string)kvp.Value).Replace("(", "").Replace(")", ""));
                     }
                     catch (Exception)
                     {
@@ -402,7 +465,7 @@ namespace ProgAssign1
                     else
                     {
                         validation.Add("EMAIL", true);
-                        cust.province = (string)kvp.Value;
+                        cust.email_address = (string)kvp.Value;
                     }
                 }
 
@@ -435,7 +498,7 @@ namespace ProgAssign1
         public string country { get; set; }
         public int phone_number { get; set; }
         public string email_address { get; set; }
-        public DateOnly file_date { get; set; }
+        public DateOnly? file_date { get; set; }
 
         public Customer()
         {
@@ -448,7 +511,7 @@ namespace ProgAssign1
             this.postol_code = String.Empty;
             this.phone_number = int.MinValue;
             this.email_address = String.Empty;
-            this.file_date = DateOnly.FromDateTime(DateTime.Now);
+            this.file_date = null;
         }
 
         public Customer(string first_name, string last_name, int street_number, string street_name, string city, string postol_code, string province, string country, int phone_number, string email_address)
